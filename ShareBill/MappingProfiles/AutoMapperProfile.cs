@@ -2,7 +2,7 @@ using AutoMapper;
 using ShareBill.Contracts;
 using ShareBill.Models;
 
-namespace TodoAPI.MappingProfiles
+namespace ShareBill.MappingProfiles
 {
     public class AutoMapperProfile : Profile
     {
