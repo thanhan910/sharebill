@@ -1,4 +1,6 @@
 using AutoMapper;
+using Microsoft.EntityFrameworkCore;
+
 using ShareBill.Contracts;
 using ShareBill.Interface;
 using ShareBill.Models;
@@ -33,9 +35,16 @@ namespace ShareBill.Services
             throw new NotImplementedException();
         }
 
-        public Task<IEnumerable<Todo>> GetAllAsync()
+        // Get all TODO Items from the database 
+        public async Task<IEnumerable<Todo>> GetAllAsync()
         {
-            throw new NotImplementedException();
+            var todo = await _context.Todos.ToListAsync();
+            if (todo == null)
+            {
+                throw new Exception(" No Todo items found");
+            }
+            return todo;
+
         }
 
         public Task<Todo> GetByIdAsync(Guid id)
