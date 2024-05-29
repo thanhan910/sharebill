@@ -20,7 +20,7 @@ namespace ShareBill.AppDataContext
 
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {
-            optionsBuilder.UseSqlServer(_dbsettings.ConnectionString);
+            optionsBuilder.UseNpgsql(_dbsettings.ConnectionString);
         }
 
         // Configuring the model for the Todo entity
