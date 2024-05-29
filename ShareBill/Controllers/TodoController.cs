@@ -31,5 +31,24 @@ namespace ShareBill.Controllers
 
             }
         }
+
+        [HttpGet]
+        public async Task<IActionResult> GetAllAsync()
+        {
+            try
+            {
+                var todo = await _todoServices.GetAllAsync();
+                if (todo == null || !todo.Any())
+                {
+                    return Ok(new { message = "No Todo Items  found" });
+                }
+                return Ok(new { message = "Successfully retrieved all blog posts", data = todo });
+
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { message = "An error occurred while retrieving all Tood it posts", error = ex.Message });
+            }
+        }
     }
 }
