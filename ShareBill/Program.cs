@@ -1,6 +1,8 @@
 using ShareBill.AppDataContext;
 using ShareBill.Models;
 using ShareBill.Middleware;
+using ShareBill.Interface;
+using ShareBill.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -16,6 +18,8 @@ builder.Services.AddSingleton<TodoDbContext>();
 builder.Services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());
 
 builder.Services.AddExceptionHandler<GlobalExceptionHandler>();
+
+builder.Services.AddScoped<ITodoServices, TodoServices>();
 
 builder.Services.AddProblemDetails();
 
