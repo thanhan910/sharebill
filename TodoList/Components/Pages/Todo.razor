@@ -5,31 +5,184 @@
 
 <PageTitle>Todo</PageTitle>
 
-<h3>Todo (@todos.Count(todo => !todo.IsDone))</h3>
+<h3>Payers (@payers.Count())</h3>
 
 <ul>
-    @foreach (var todo in todos)
+    @foreach (var payerId in payerIds)
     {
         <li>
-            <input type="checkbox" @bind="todo.IsDone" />
-            <input @bind="todo.Title" />
+            <input @bind="payers[payerId]" />
+            <button @onclick="() => DeletePayer(payerId)">Delete</button>
         </li>
     }
+    <li>
+        <form @onsubmit="AddPayer">
+            <input placeholder="Add new payer" @bind="newPayerName" />
+            <button type="submit">Add Payer</button>
+        </form>
+    </li>
 </ul>
 
-<input placeholder="Something todo" @bind="newTodo" />
-<button @onclick="AddTodo">Add todo</button>
+@code {
+    private Dictionary<int, string> payers = new();
+    private List<int> payerIds = new();
+    private string? newPayerName = "Payer 1"; // "Payer 1" is the default payer
+    private int payerIndex = 1;
+
+    private void AddPayer()
+    {
+        if (!string.IsNullOrWhiteSpace(newPayerName))
+        {
+            payers.Add(payerIndex, newPayerName);
+            payerIds.Add(payerIndex);
+            while (payers.ContainsKey(payerIndex))
+            {
+                payerIndex++;
+            }
+            newPayerName = $"Payer {payerIndex}";
+        }
+    }
+
+    private void DeletePayer(int payerId)
+    {
+        payers.Remove(payerId);
+        payerIds.Remove(payerId);
+        Console.WriteLine($"PayerId: {payerId}, PayerIndex: {payerIndex}");
+        if (payerId < payerIndex)
+        {
+            payerIndex = payerId;
+        }
+        newPayerName = $"Payer {payerIndex}";
+    }
+}
+
+<h3>Owners (@owners.Count())</h3>
+
+<ul>
+    @foreach (var ownerId in ownerIds)
+    {
+        <li>
+            <input @bind="owners[ownerId]" />
+            <button @onclick="() => DeleteOwner(ownerId)">Delete</button>
+        </li>
+    }
+    <li>
+        <form @onsubmit="AddOwner">
+            <input placeholder="Add new owner (payee)" @bind="newOwner" />
+            <button type="submit">Add owner</button>
+        </form>
+    </li>
+</ul>
 
 @code {
-    private List<TodoItem> todos = new();
-    private string? newTodo;
+    private Dictionary<int, string> owners = new();
+    private List<int> ownerIds = new();
+    private string? newOwner = "Owner 1"; // "Owner 1" is the default owner
+    private int ownerIndex = 1;
 
-    private void AddTodo()
+    private void AddOwner()
     {
-        if (!string.IsNullOrWhiteSpace(newTodo))
+        if (!string.IsNullOrWhiteSpace(newOwner))
         {
-            todos.Add(new TodoItem { Title = newTodo });
-            newTodo = string.Empty;
+            owners.Add(ownerIndex, newOwner);
+            ownerIds.Add(ownerIndex);
+            while (owners.ContainsKey(ownerIndex))
+            {
+                ownerIndex++;
+            }
+            newOwner = $"Owner {ownerIndex}";
+        }
+    }
+
+    private void DeleteOwner(int ownerId)
+    {
+        owners.Remove(ownerId);
+        ownerIds.Remove(ownerId);
+        if (ownerId < ownerIndex)
+        {
+            ownerIndex = ownerId;
+        }
+        newOwner = $"Owner {ownerIndex}";
+    }
+}
+
+@* Sum *@
+<h3>Items (@items.Sum(i => i.Price))</h3>
+
+<ul>
+    @foreach (var item in items)
+    {
+        <li>
+            <input @bind="item.Title" />
+            <input @bind="item.Price" />
+            <input @bind="item.Quantity" />
+            <select @bind="item.PayerId">
+                <option value="0">Select payer</option>
+                @foreach (var payerId in payerIds)
+                {
+                    <option value="@payerId">@payers[payerId]</option>
+                }
+            </select>
+            <select @bind="item.OwnerId">
+                <option value="0">Select owner</option>
+                @foreach (var ownerId in ownerIds)
+                {
+                    <option value="@ownerId">@owners[ownerId]</option>
+                }
+            </select>
+            <button @onclick="() => items.Remove(item)">Delete</button>
+        </li>
+    }
+    <li>
+        <form @onsubmit="AddItem">
+            <input placeholder="Add new item" @bind="newItemTitle" />
+            <input placeholder="Price" @bind="newItemPrice" />
+            <input placeholder="Quantity" @bind="newItemQuantity" />
+            <select @bind="newItemPayerId">
+                <option value="0">Select payer</option>
+                @foreach (var payerId in payerIds)
+                {
+                    <option value="@payerId">@payers[payerId]</option>
+                }
+            </select>
+            <select @bind="newItemOwnerId">
+                <option value="0">Select owner</option>
+                @foreach (var ownerId in ownerIds)
+                {
+                    <option value="@ownerId">@owners[ownerId]</option>
+                }
+            </select>
+            <button type="submit">Add item</button>
+        </form>
+    </li>
+</ul>
+
+
+@code {
+    private List<Item> items = new();
+    public string? newItemTitle { get; set; }
+    public double? newItemPrice { get; set; }
+    public double? newItemQuantity { get; set; }
+    public int? newItemPayerId { get; set; }
+    public int? newItemOwnerId { get; set; }
+
+    private void AddItem()
+    {
+        if (!string.IsNullOrWhiteSpace(newItemTitle))
+        {
+            items.Add(new Item
+                {
+                    Title = newItemTitle,
+                    Price = newItemPrice ?? 0,
+                    Quantity = newItemQuantity ?? 0,
+                    PayerId = newItemPayerId == 0 ? null : newItemPayerId,
+                    OwnerId = newItemOwnerId == 0 ? null : newItemOwnerId
+                });
+            newItemTitle = string.Empty;
+            newItemPrice = null;
+            newItemQuantity = null;
+            newItemPayerId = null;
+            newItemOwnerId = null;
         }
     }
 }
