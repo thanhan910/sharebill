@@ -38,11 +38,7 @@ namespace ShareBill.Services
         // Get all TODO Items from the database 
         public async Task<IEnumerable<Todo>> GetAllAsync()
         {
-            var todo = await _context.Todos.ToListAsync();
-            if (todo == null)
-            {
-                throw new Exception(" No Todo items found");
-            }
+            var todo = await _context.Todos.ToListAsync() ?? throw new Exception(" No Todo items found");
             return todo;
 
         }
