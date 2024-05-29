@@ -15,12 +15,12 @@ builder.Services.AddSingleton<TodoDbContext>();
 
 builder.Services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());
 
-builder.Services.AddExceptionHandler<GlobalExceptionHandler>(); // Add this line
+builder.Services.AddExceptionHandler<GlobalExceptionHandler>();
 
-builder.Services.AddProblemDetails();  // Add this line
+builder.Services.AddProblemDetails();
 
 // Adding of login 
-builder.Services.AddLogging();  //  Add this line
+builder.Services.AddLogging();
 
 var app = builder.Build();
 
