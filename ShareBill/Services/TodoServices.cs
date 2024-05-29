@@ -12,9 +12,20 @@ namespace ShareBill.Services
         private readonly ILogger<TodoServices> _logger = logger;
         private readonly IMapper _mapper = mapper;
 
-        public Task CreateTodoAsync(CreateTodoRequest request)
+        public async Task CreateTodoAsync(CreateTodoRequest request)
         {
-            throw new NotImplementedException();
+            try
+            {
+                var todo = _mapper.Map<Todo>(request);
+                todo.CreatedAt = DateTime.UtcNow;
+                _context.Todos.Add(todo);
+                await _context.SaveChangesAsync();
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "An error occurred while creating the Todo item.");
+                throw new Exception("An error occurred while creating the Todo item.");
+            }
         }
 
         public Task DeleteTodoAsync(Guid id)
