@@ -1,27 +1,50 @@
 ﻿@using TodoList
+@using Microsoft.FluentUI.AspNetCore.Components
 
 @page "/todo"
 @rendermode InteractiveServer
 
 <PageTitle>Todo</PageTitle>
 
-<h3>Payers (@payers.Count())</h3>
+<h3>Payers (Count: @payers.Count())</h3>
 
-<ul>
-    @foreach (var payerId in payerIds)
-    {
-        <li>
-            <input @bind="payers[payerId]" />
-            <button @onclick="() => DeletePayer(payerId)">Delete</button>
-        </li>
-    }
-    <li>
-        <form @onsubmit="AddPayer">
-            <input placeholder="Add new payer" @bind="newPayerName" />
-            <button type="submit">Add Payer</button>
-        </form>
-    </li>
-</ul>
+<FluentGrid Justify="JustifyContent.FlexStart" Spacing="3">
+    <FluentGridItem xs="12" sm="6">
+        <FluentSortableList Id="dragHandles" Handle="true" Items="payerIds" OnUpdate="args => SortList(args, payerIds)"
+            Context="payerId">
+            <ItemTemplate>
+                <span class="sortable-grab" style="cursor: move;">
+                    <FluentIcon Value="@(new Icons.Regular.Size20.ArrowSort())" />
+                </span>
+                <span class="sortable-item">
+                    <input @bind="payers[payerId]" />
+                    <FluentIcon Value="@(new Icons.Regular.Size20.Delete())" @onclick="() => DeletePayer(payerId)" />
+                </span>
+            </ItemTemplate>
+        </FluentSortableList>
+    </FluentGridItem>
+</FluentGrid>
+
+@* <form @onsubmit="AddPayer" class="row g-1 bg-light border rounded p-1">
+<div class="col-4">
+<input type="text" class="form-control" placeholder="Add new payer" @bind="newPayerName" />
+</div>
+<div class="col-2">
+<button type="submit" class="btn btn-primary">Add Payer</button>
+</div>
+</form> *@
+
+<div class="d-flex justify-content-left my-2">
+    <form @onsubmit="AddPayer" class="row g-1 bg-light border rounded p-1">
+        <div class="col-auto">
+            <input type="text" class="form-control" placeholder="Add new payer" @bind="newPayerName" />
+        </div>
+        <div class="col-auto">
+            <button type="submit" class="btn btn-primary">Add Payer</button>
+        </div>
+    </form>
+</div>
+
 
 @code {
     private Dictionary<int, string> payers = new();
@@ -56,11 +79,11 @@
                 if (!nameIsTaken)
                 {
                     break;
-                }                
+                }
                 i++;
-                newName = $"Owner {i}";
+                newName = $"Payer {i}";
             }
-            
+
             newPayerName = newName;
         }
     }
@@ -77,23 +100,35 @@
     }
 }
 
-<h3>Owners (@owners.Count())</h3>
+<h3>Owners (Count: @owners.Count())</h3>
 
-<ul>
-    @foreach (var ownerId in ownerIds)
-    {
-        <li>
-            <input @bind="owners[ownerId]" />
-            <button @onclick="() => DeleteOwner(ownerId)">Delete</button>
-        </li>
-    }
-    <li>
-        <form @onsubmit="AddOwner">
-            <input placeholder="Add new owner (payee)" @bind="newOwnerName" />
-            <button type="submit">Add owner</button>
-        </form>
-    </li>
-</ul>
+<FluentGrid Justify="JustifyContent.FlexStart" Spacing="3">
+    <FluentGridItem xs="12" sm="6">
+        <FluentSortableList Id="dragHandles" Handle="true" Items="ownerIds" OnUpdate="args => SortList(args, ownerIds)"
+            Context="ownerId">
+            <ItemTemplate>
+                <span class="sortable-grab" style="cursor: move;">
+                    <FluentIcon Value="@(new Icons.Regular.Size20.ArrowSort())" />
+                </span>
+                <span class="sortable-item">
+                    <input @bind="owners[ownerId]" />
+                    <FluentIcon Value="@(new Icons.Regular.Size20.Delete())" @onclick="() => DeleteOwner(ownerId)" />
+                </span>
+            </ItemTemplate>
+        </FluentSortableList>
+    </FluentGridItem>
+</FluentGrid>
+
+<div class="d-flex justify-content-left my-2">
+    <form @onsubmit="AddOwner" class="row g-1 bg-light border rounded p-1">
+        <div class="col-auto">
+            <input type="text" class="form-control" placeholder="Add new owner (payee)" @bind="newOwnerName" />
+        </div>
+        <div class="col-auto">
+            <button type="submit" class="btn btn-primary">Add Owner</button>
+        </div>
+    </form>
+</div>
 
 @code {
     private Dictionary<int, string> owners = new();
@@ -128,11 +163,11 @@
                 if (!nameIsTaken)
                 {
                     break;
-                }                
+                }
                 i++;
                 newName = $"Owner {i}";
             }
-            
+
             newOwnerName = newName;
         }
     }
@@ -149,61 +184,85 @@
     }
 }
 
-@* Sum *@
-<h3>Items (@items.Sum(i => i.Price))</h3>
 
-<ul>
-    @foreach (var item in items)
-    {
-        <li>
-            <input @bind="item.Title" />
-            <input @bind="item.Price" />
-            <input @bind="item.Quantity" />
-            <select @bind="item.PayerId">
-                <option value="0">Select payer</option>
+<h3>Items (Count: @items.Count, Total price: @items.Sum(i => i.Price)), Total quantity: @items.Sum(i => i.Quantity))
+</h3>
+
+
+<FluentGrid Justify="JustifyContent.FlexStart" Spacing="3">
+    <FluentGridItem xs="12" sm="6">
+        <FluentSortableList Id="dragHandles" Handle="true" Items="items" OnUpdate="args => SortList(args, items)"
+            Context="item">
+            <ItemTemplate>
+                <span class="sortable-grab" style="cursor: move;">
+                    <FluentIcon Value="@(new Icons.Regular.Size20.ArrowSort())" />
+                </span>
+                <span class="sortable-item">
+                    <input class="form-control" @bind="item.Title" />
+                    <input class="form-control" @bind="item.Price" />
+                    <input class="form-control" @bind="item.Quantity" />
+                    <select @bind="item.PayerId">
+                        <option value="0">Select payer</option>
+                        @foreach (var payerId in payerIds)
+                        {
+                            <option value="@payerId">@payers[payerId]</option>
+                        }
+                    </select>
+                    <select @bind="item.OwnerId">
+                        <option value="0">Select owner</option>
+                        @foreach (var ownerId in ownerIds)
+                        {
+                            <option value="@ownerId">@owners[ownerId]</option>
+                        }
+                    </select>
+                    <FluentIcon Value="@(new Icons.Regular.Size20.Delete())" @onclick="() => items.Remove(item)"
+                        class="col-12" />
+                </span>
+            </ItemTemplate>
+        </FluentSortableList>
+    </FluentGridItem>
+</FluentGrid>
+
+<div class="d-inline-flex justify-content-left my-2 flex-wrap">
+    <form @onsubmit="AddItem" class="row g-1 bg-light border rounded p-1 flex-wrap">
+        <div class="col-5">
+            <input type="text" class="form-control" placeholder="Add new item" @bind="newItemTitle" />
+        </div>
+        <div class="col-1">
+            <input type="number" class="form-control" placeholder="Paid" @bind="newItemPrice" />
+        </div>
+        <div class="col-1">
+            <input type="number" class="form-control" placeholder="Quantity" @bind="newItemQuantity" />
+        </div>
+        <div class="col-auto">
+            <select @bind="newItemPayerId" class="form-select" style="width: fit-content;">
+                <option selected value="0">Select payer...</option>
                 @foreach (var payerId in payerIds)
                 {
                     <option value="@payerId">@payers[payerId]</option>
                 }
             </select>
-            <select @bind="item.OwnerId">
-                <option value="0">Select owner</option>
+        </div>
+        <div class="col-auto">
+            <select @bind="newItemOwnerId" class="form-select" style="width: fit-content;">
+                <option selected value="0">Select owner...</option>
                 @foreach (var ownerId in ownerIds)
                 {
                     <option value="@ownerId">@owners[ownerId]</option>
                 }
             </select>
-            <button @onclick="() => items.Remove(item)">Delete</button>
-        </li>
-    }
-    <li>
-        <form @onsubmit="AddItem">
-            <input placeholder="Add new item" @bind="newItemTitle" />
-            <input placeholder="Price" @bind="newItemPrice" />
-            <input placeholder="Quantity" @bind="newItemQuantity" />
-            <select @bind="newItemPayerId">
-                <option value="0">Select payer</option>
-                @foreach (var payerId in payerIds)
-                {
-                    <option value="@payerId">@payers[payerId]</option>
-                }
-            </select>
-            <select @bind="newItemOwnerId">
-                <option value="0">Select owner</option>
-                @foreach (var ownerId in ownerIds)
-                {
-                    <option value="@ownerId">@owners[ownerId]</option>
-                }
-            </select>
+        </div>
+        <div class="col-auto">
             <button type="submit" class="btn btn-primary">Add item</button>
-        </form>
-    </li>
-</ul>
+        </div>
+    </form>
+</div>
 
 
 @code {
     private List<Item> items = new();
-    public string? newItemTitle = "Item 1"; // "Item 1" is the default item
+    public string? newItemTitle;
+    public string? defaultItemTitle = "Item 1";
     public double? newItemPrice = 0;
     public double? newItemQuantity = 1;
     public int? newItemPayerId;
@@ -211,45 +270,69 @@
 
     private void AddItem()
     {
-        if (!string.IsNullOrWhiteSpace(newItemTitle))
-        {
-            items.Add(new Item
-                {
-                    Title = newItemTitle,
-                    Price = newItemPrice ?? 0,
-                    Quantity = newItemQuantity ?? 0,
-                    PayerId = newItemPayerId == 0 ? null : newItemPayerId,
-                    OwnerId = newItemOwnerId == 0 ? null : newItemOwnerId
-                });
-            newItemTitle = string.Empty;
-            newItemPrice = null;
-            newItemQuantity = null;
-            newItemPayerId = null;
-            newItemOwnerId = null;
-
-            int i = 1;
-            bool nameIsTaken = true;
-            string newName = $"Item {i}";
-            while (nameIsTaken)
+        items.Add(new Item
             {
-                nameIsTaken = false;
-                foreach (Item item in items)
-                {
-                    if (item.Title == newName)
-                    {
-                        nameIsTaken = true;
-                        break;
-                    }
-                }
-                if (!nameIsTaken)
-                {
-                    break;
-                }                
-                i++;
-                newName = $"Item {i}";
-            }
+                Title = string.IsNullOrWhiteSpace(newItemTitle) ? defaultItemTitle : newItemTitle,
+                Price = newItemPrice ?? 0,
+                Quantity = newItemQuantity ?? 1,
+                PayerId = newItemPayerId == 0 ? null : newItemPayerId,
+                OwnerId = newItemOwnerId == 0 ? null : newItemOwnerId
+            });
+        newItemTitle = string.Empty;
+        newItemPrice = null;
+        newItemQuantity = null;
+        newItemPayerId = null;
+        newItemOwnerId = null;
 
-            newItemTitle = newName;
+        int i = 1;
+        bool nameIsTaken = true;
+        string newName = $"Item {i}";
+        while (nameIsTaken)
+        {
+            nameIsTaken = false;
+            foreach (Item item in items)
+            {
+                if (item.Title?.Trim() == newName)
+                {
+                    nameIsTaken = true;
+                    break;
+                }
+            }
+            if (!nameIsTaken)
+            {
+                break;
+            }
+            i++;
+            newName = $"Item {i}";
+        }
+
+        defaultItemTitle = newName;
+    }
+}
+
+
+@code {
+    private void SortList<T>(FluentSortableListEventArgs args, List<T> myitems)
+    {
+        if (args is null || args.OldIndex == args.NewIndex)
+        {
+            return;
+        }
+
+        var oldIndex = args.OldIndex;
+        var newIndex = args.NewIndex;
+
+        @* var myitems = this.myitems; *@
+        var itemToMove = myitems[oldIndex];
+        myitems.RemoveAt(oldIndex);
+
+        if (newIndex < myitems.Count)
+        {
+            myitems.Insert(newIndex, itemToMove);
+        }
+        else
+        {
+            myitems.Add(itemToMove);
         }
     }
 }
