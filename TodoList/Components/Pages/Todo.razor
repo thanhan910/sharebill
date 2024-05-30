@@ -14,7 +14,11 @@
             OnUpdate="args => SortList(args, peopleIds)" Context="personId">
             <ItemTemplate>
                 <span class="sortable-item">
-                    <input @bind="peopleMap[personId]" type="text" style="border: none; background: transparent; outline: none;" />
+                    <input @bind="peopleMap[personId].Name" type="text" style="border: none; background: transparent; outline: none;" />
+                    <input type="checkbox" @bind="peopleMap[personId].IsPayer" />
+                    <label>Payer</label>
+                    <input type="checkbox" @bind="peopleMap[personId].IsOwner" />
+                    <label>Owner</label>
                     <FluentIcon Value="@(new Icons.Regular.Size20.Delete())" @onclick="() => DeletePerson(personId)" />
                 </span>
                 <span class="sortable-grab" style="cursor: move;">
@@ -31,16 +35,25 @@
             <input type="text" class="form-control" placeholder="Add new participant" @bind="newPersonName" />
         </div>
         <div class="col-auto">
+            <input type="checkbox" class="form-check-input" @bind="isPayer" />
+            <label class="form-check-label">Payer</label>
+        </div>
+        <div class="col-auto">
+            <input type="checkbox" class="form-check-input" @bind="isOwner" />
+            <label class="form-check-label">Owner</label>
+        </div>
+        <div class="col-auto">
             <button type="submit" class="btn btn-primary">Add person</button>
         </div>
     </form>
 </div>
 
 @code {
-    private Dictionary<int, string> peopleMap = new Dictionary<int, string> { { 1, "Person 1" }, { 2, "Person 2" }, { 3,
-"Person 3" } };
-    private List<int> peopleIds = new List<int> { 1, 2, 3 };
+    private Dictionary<int, Person> peopleMap = new Dictionary<int, Person>();
+    private List<int> peopleIds = new();
     private string? newPersonName;
+    private bool isPayer = true;
+    private bool isOwner = true;
     private string? defaultPersonName = "Person 4"; // "Person 1" is the default name
     private int personIndex = 4;
 
@@ -60,7 +73,7 @@
         }
         if (newPersonName != null)
         {
-            peopleMap.Add(personIndex, newPersonName);
+            peopleMap.Add(personIndex, new Person { Name = newPersonName, IsPayer = isPayer, IsOwner = isOwner });
         }
         peopleIds.Add(personIndex);
         while (peopleMap.ContainsKey(personIndex))
@@ -73,9 +86,9 @@
         while (nameIsTaken)
         {
             nameIsTaken = false;
-            foreach (string personName in peopleMap.Values)
+            foreach (Person person in peopleMap.Values)
             {
-                if (personName == newName)
+                if (person.Name == newName)
                 {
                     nameIsTaken = true;
                     break;
@@ -90,15 +103,17 @@
         }
         defaultPersonName = newName;
         newPersonName = string.Empty;
+        isPayer = true;
+        isOwner = true;
     }
 
-    private void DeletePerson(int ownerId)
+    private void DeletePerson(int personId)
     {
-        peopleMap.Remove(ownerId);
-        peopleIds.Remove(ownerId);
-        if (ownerId < personIndex)
+        peopleMap.Remove(personId);
+        peopleIds.Remove(personId);
+        if (personId < personIndex)
         {
-            personIndex = ownerId;
+            personIndex = personId;
         }
         newPersonName = string.Empty;
         defaultPersonName = $"Person {personIndex}";
@@ -127,14 +142,14 @@
                     <option value="0">Select payer</option>
                     @foreach (var payerId in peopleIds)
                     {
-                        <option value="@payerId">@peopleMap[payerId]</option>
+                        <option value="@payerId">@peopleMap[payerId].Name</option>
                     }
                 </select>
                 <select @bind="item.OwnerId" style="border: none; background: transparent; outline: none;">
                     <option value="0">Select owner</option>
                     @foreach (var ownerId in peopleIds)
                     {
-                        <option value="@ownerId">@peopleMap[ownerId]</option>
+                        <option value="@ownerId">@peopleMap[ownerId].Name</option>
                     }
                 </select>
                 <FluentIcon Value="@(new Icons.Regular.Size20.Delete())" @onclick="() => items.Remove(item)"
@@ -163,7 +178,7 @@
                 <option selected value="0">Select payer...</option>
                 @foreach (var payerId in peopleIds)
                 {
-                    <option value="@payerId">@peopleMap[payerId]</option>
+                    <option value="@payerId">@peopleMap[payerId].Name</option>
                 }
             </select>
         </div>
@@ -172,7 +187,7 @@
                 <option selected value="0">Select owner...</option>
                 @foreach (var ownerId in peopleIds)
                 {
-                    <option value="@ownerId">@peopleMap[ownerId]</option>
+                    <option value="@ownerId">@peopleMap[ownerId].Name</option>
                 }
             </select>
         </div>
