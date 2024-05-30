@@ -39,7 +39,29 @@
             {
                 payerIndex++;
             }
-            newPayerName = $"Payer {payerIndex}";
+            int i = 1;
+            bool nameIsTaken = true;
+            string newName = $"Payer {i}";
+            while (nameIsTaken)
+            {
+                nameIsTaken = false;
+                foreach (string payerName in payers.Values)
+                {
+                    if (payerName == newName)
+                    {
+                        nameIsTaken = true;
+                        break;
+                    }
+                }
+                if (!nameIsTaken)
+                {
+                    break;
+                }                
+                i++;
+                newName = $"Owner {i}";
+            }
+            
+            newPayerName = newName;
         }
     }
 
@@ -47,7 +69,6 @@
     {
         payers.Remove(payerId);
         payerIds.Remove(payerId);
-        Console.WriteLine($"PayerId: {payerId}, PayerIndex: {payerIndex}");
         if (payerId < payerIndex)
         {
             payerIndex = payerId;
@@ -68,7 +89,7 @@
     }
     <li>
         <form @onsubmit="AddOwner">
-            <input placeholder="Add new owner (payee)" @bind="newOwner" />
+            <input placeholder="Add new owner (payee)" @bind="newOwnerName" />
             <button type="submit">Add owner</button>
         </form>
     </li>
@@ -77,20 +98,42 @@
 @code {
     private Dictionary<int, string> owners = new();
     private List<int> ownerIds = new();
-    private string? newOwner = "Owner 1"; // "Owner 1" is the default owner
+    private string? newOwnerName = "Owner 1"; // "Owner 1" is the default owner
     private int ownerIndex = 1;
 
     private void AddOwner()
     {
-        if (!string.IsNullOrWhiteSpace(newOwner))
+        if (!string.IsNullOrWhiteSpace(newOwnerName))
         {
-            owners.Add(ownerIndex, newOwner);
+            owners.Add(ownerIndex, newOwnerName);
             ownerIds.Add(ownerIndex);
             while (owners.ContainsKey(ownerIndex))
             {
                 ownerIndex++;
             }
-            newOwner = $"Owner {ownerIndex}";
+            int i = 1;
+            bool nameIsTaken = true;
+            string newName = $"Owner {i}";
+            while (nameIsTaken)
+            {
+                nameIsTaken = false;
+                foreach (string ownerName in owners.Values)
+                {
+                    if (ownerName == newName)
+                    {
+                        nameIsTaken = true;
+                        break;
+                    }
+                }
+                if (!nameIsTaken)
+                {
+                    break;
+                }                
+                i++;
+                newName = $"Owner {i}";
+            }
+            
+            newOwnerName = newName;
         }
     }
 
@@ -102,7 +145,7 @@
         {
             ownerIndex = ownerId;
         }
-        newOwner = $"Owner {ownerIndex}";
+        newOwnerName = $"Owner {ownerIndex}";
     }
 }
 
@@ -152,7 +195,7 @@
                     <option value="@ownerId">@owners[ownerId]</option>
                 }
             </select>
-            <button type="submit">Add item</button>
+            <button type="submit" class="btn btn-primary">Add item</button>
         </form>
     </li>
 </ul>
@@ -160,11 +203,11 @@
 
 @code {
     private List<Item> items = new();
-    public string? newItemTitle { get; set; }
-    public double? newItemPrice { get; set; }
-    public double? newItemQuantity { get; set; }
-    public int? newItemPayerId { get; set; }
-    public int? newItemOwnerId { get; set; }
+    public string? newItemTitle = "Item 1"; // "Item 1" is the default item
+    public double? newItemPrice = 0;
+    public double? newItemQuantity = 1;
+    public int? newItemPayerId;
+    public int? newItemOwnerId;
 
     private void AddItem()
     {
@@ -183,6 +226,30 @@
             newItemQuantity = null;
             newItemPayerId = null;
             newItemOwnerId = null;
+
+            int i = 1;
+            bool nameIsTaken = true;
+            string newName = $"Item {i}";
+            while (nameIsTaken)
+            {
+                nameIsTaken = false;
+                foreach (Item item in items)
+                {
+                    if (item.Title == newName)
+                    {
+                        nameIsTaken = true;
+                        break;
+                    }
+                }
+                if (!nameIsTaken)
+                {
+                    break;
+                }                
+                i++;
+                newName = $"Item {i}";
+            }
+
+            newItemTitle = newName;
         }
     }
 }
