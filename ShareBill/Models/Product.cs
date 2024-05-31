@@ -1,56 +1,69 @@
 namespace ShareBill.Models
 {
-    public enum SplitScheme
-    {
-        ByUnitAmount = 0,
-        ByItemCount = 1,
-        ByProportion = 2,
-    }
-
     public class Product
     {        
-        public string Name { get; set; }
+        public string Name { get; set; } = string.Empty;
         // The amount bought quantified in the unit of UnitName
-        public string UnitName { get; set; } = "item";
-        public decimal Quantity { get; set; } = 1;
+        private bool _useUnit = false;
+        public bool UseUnit { 
+            get {
+                return _useUnit;
+            }
+            set {
+                _useUnit = value;
+                if (!value)
+                {
+                    _unitName = "";
+                    _quantity = (int)_quantity;
+                    ItemCount = (int)_quantity;
+                }
+            }
+        }
+        public bool IsUsingUnit {
+            get {
+                return UseUnit && !string.IsNullOrEmpty(_unitName);
+            }
+        }
+        private string _unitName = "";
+        public string UnitName {
+            get {
+                return IsUsingUnit ? _unitName : "";
+            }
+            set {
+                _unitName = UseUnit ? value : "";
+            }
+        }
+        private decimal _quantity = 1;
+        public decimal Quantity { 
+            get {
+                return _quantity;
+            } 
+            set {
+                _quantity = value;
+                if (!IsUsingUnit)
+                {
+                    _quantity = (int)value;
+                    ItemCount = (int)value;
+                }
+            }
+        }
         public decimal PricePerUnit { get; set; } = 1;
         public decimal TotalPrice {
             get {
-                return Quantity * PricePerUnit;
+                return _quantity * PricePerUnit;
             }
             set {
-                Quantity = value / PricePerUnit;
+                PricePerUnit = value / _quantity;
             }
         }
         // Count of individual units. Differs from Quantity. E.g. 3 apples for 2 kg, 3 is ItemCount, 2 is Quantity, kg is UnitName
         public int ItemCount { get; set; } = 1;
+        public static Dictionary<int, string> SplitSchemeMap = new()
+        {
+            { 0, "By unit amount" },
+            { 1, "By item count" },
+            { 2, "By percentage" },
+        };
         public int SplitScheme { get; set; } = 0;
-
-        // public Product(string name, decimal quantity, string unitName, decimal pricePerUnit, int itemCount = 1)
-        // {
-        //     Name = name;
-        //     Quantity = quantity;
-        //     UnitName = unitName;
-        //     PricePerUnit = pricePerUnit;
-        //     ItemCount = itemCount;
-        // }
-
-        // public List<decimal> Portions { get; set; } = [1];
-        // private SplitScheme _splitScheme = SplitScheme.ByItemCount;
-        // public SplitScheme SplitScheme {
-        //     get {
-        //         return _splitScheme;
-        //     }
-        //     set {
-        //         _splitScheme = value;
-        //         Portions = _splitScheme switch
-        //         {
-        //             SplitScheme.ByItemCount => [ItemCount],
-        //             SplitScheme.ByUnitAmount => [Quantity],
-        //             SplitScheme.ByProportion => [1],
-        //             _ => throw new ArgumentException("Invalid SplitScheme"),
-        //         };
-        //     }
-        // }
     }
 } 

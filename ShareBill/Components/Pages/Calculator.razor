@@ -16,8 +16,8 @@
   <thead>
     <tr>
       <th>Name</th>
-      <th>Payer</th>
-      <th>Owner</th>
+      <th>Is Payer</th>
+      <th>Is Owner</th>
       <th></th>
     </tr>
   </thead>
@@ -36,7 +36,7 @@
 
 <h3>Add Participants</h3>
 
-<form @onsubmit="AddParticipant" class="row">
+<form @onsubmit="AddParticipant" class="row g-2 align-items-center">
   <div class="col-sm-12 col-md-4">
     <input type="text" class="form-control" placeholder="Name" @bind="participantName" />
   </div>
@@ -67,8 +67,7 @@
   {
     if (string.IsNullOrWhiteSpace(participantName))
     {
-      @* participantName = DateTime.Now.ToString("yyyyMMddHHmmssfff"); *@
-      participantName = "New participant";
+      participantName = DateTime.Now.ToString("yyyyMMddHHmmssfff");
     }
     participants.Add(new Person
       {
@@ -77,85 +76,22 @@
         IsOwner = participantIsOwner
       });
     participantName = string.Empty;
-    participantIsPayer = true;
-    participantIsOwner = true;
   }
 }
 
+<br />
+
+
 <h3>Products List</h3>
-
-@* namespace ShareBill.Models
-{
-    public enum SplitScheme
-    {
-        ByUnitAmount = 0,
-        ByItemCount = 1,
-        ByProportion = 2,
-    }
-
-    public class Product
-    {        
-        public string Name { get; set; }
-        // The amount bought quantified in the unit of UnitName
-        public decimal Quantity { get; set; } = 1;
-        public string UnitName { get; set; } = "item";
-        public decimal PricePerUnit {
-            get {
-                return TotalPrice / Quantity;
-            }
-            set {
-                TotalPrice = value * Quantity;
-            }
-        }
-        public decimal TotalPrice {
-            get {
-                return PricePerUnit * Quantity;
-            }
-            set {
-                Quantity = value / PricePerUnit;
-            }
-        }
-        // Count of individual units. Differs from Quantity. E.g. 3 apples for 2 kg, 3 is ItemCount, 2 is Quantity, kg is UnitName
-        public int ItemCount { get; set; } = 1;
-        public SplitScheme SplitScheme { get; set; } = SplitScheme.ByUnitAmount;
-
-        // public Product(string name, decimal quantity, string unitName, decimal pricePerUnit, int itemCount = 1)
-        // {
-        //     Name = name;
-        //     Quantity = quantity;
-        //     UnitName = unitName;
-        //     PricePerUnit = pricePerUnit;
-        //     ItemCount = itemCount;
-        // }
-
-        // public List<decimal> Portions { get; set; } = [1];
-        // private SplitScheme _splitScheme = SplitScheme.ByItemCount;
-        // public SplitScheme SplitScheme {
-        //     get {
-        //         return _splitScheme;
-        //     }
-        //     set {
-        //         _splitScheme = value;
-        //         Portions = _splitScheme switch
-        //         {
-        //             SplitScheme.ByItemCount => [ItemCount],
-        //             SplitScheme.ByUnitAmount => [Quantity],
-        //             SplitScheme.ByProportion => [1],
-        //             _ => throw new ArgumentException("Invalid SplitScheme"),
-        //         };
-        //     }
-        // }
-    }
-}  *@
-
 
 <table class="table">
   <thead>
     <tr>
       <th>Name</th>
-      <th>Quantity</th>
+      <th>Unit Price</th>
       <th>Unit</th>
-      <th>Price per Unit</th>
+      <th>Amount bought</th>
+      <th>Item count</th>
       <th>Total Price</th>
       <th>Split Scheme</th>
       <th></th>
@@ -166,44 +102,81 @@
     {
       <tr>
         <td>@product.Name</td>
-        <td>@product.Quantity</td>
+        <td>$@product.PricePerUnit.ToString("0.00")</td>
         <td>@product.UnitName</td>
-        <td>@product.PricePerUnit</td>
-        <td>@product.TotalPrice</td>
-        <td>@product.SplitScheme</td>
+        <td>@product.Quantity</td>
+        <td>@product.ItemCount</td>
+        <td>$@product.TotalPrice.ToString("0.00")</td>
+        <td>@(Product.SplitSchemeMap[product.SplitScheme])</td>
         <td><button class="btn btn-danger" @onclick="() => products.Remove(product)">Delete</button></td>
       </tr>
     }
   </tbody>
 </table>
 
+<style>
+    .form-responsive-width {
+        width: 100%;
+    }
+
+    @@media (min-width: 992px) {
+        .form-responsive-width {
+            width: 60%;
+        }
+    }
+</style>
+
 
 <h3>Add Products</h3>
 
-<form @onsubmit="AddProduct" class="row">
-  <div class="col-sm-12 col-md-4">
-    <input type="text" class="form-control" placeholder="Name" @bind="product.Name" />
+<form @onsubmit="AddProduct" class="row g-3 align-items-end mb-5 form-responsive-width">
+  <div class="col-md-12">
+    <label for="productName" class="form-label">Name</label>
+    <input id="productName" type="text" class="form-control" placeholder="Name" @bind="product.Name">
   </div>
-  <div class="col-auto col-sm-2 col-md-1">
-    <input type="number" class="form-control" placeholder="Quantity" @bind="product.Quantity" />
+  <div class="col-md-8">
+    <label for="productPricePerUnit" class="form-label">Unit Price</label>
+    <span class="input-group">
+      <span class="input-group-text">$</span>
+      <input id="productPricePerUnit" type="number" step="0.01" class="form-control" placeholder="00.00" @bind="product.PricePerUnit">
+      <span class="input-group-text">/</span>
+      <input type="text" class="form-control" aria-label="Text input with checkbox" placeholder="item" @bind="product.UnitName"  disabled="@(!product.UseUnit)">
+      <div class="input-group-text">
+        <input class="form-check-input mt-0" type="checkbox" aria-label="Checkbox for following text input" @bind="product.UseUnit">
+      </div>
+      <div class="input-group-text">
+        (use unit)
+      </div>
+    </span>
   </div>
-  <div class="col-auto col-sm-2 col-md-1">
-    <input type="text" class="form-control" placeholder="Unit" @bind="product.UnitName" />
+  <div class="col-md-4">
+    <label for="productQuantity" class="form-label">Amount bought</label>
+    <span class="input-group">
+      <input id="productQuantity" type="number" step="@(product.IsUsingUnit ? "0.01" : "1")" class="form-control" placeholder="@(product.IsUsingUnit ? "00.00" : "0")" @bind="product.Quantity">
+      <span class="input-group-text">@(product.IsUsingUnit ? product.UnitName : "item")(s)</span>
+    </span>
   </div>
-  <div class="col-auto col-sm-2 col-md-1">
-    <input type="number" class="form-control" placeholder="Price per Unit" @bind="product.PricePerUnit" />
+  <div class="col-md-4">
+    <label for="productTotalPrice" class="form-label">Total Price</label>
+    <span class="input-group">
+      <span class="input-group-text">$</span>
+      <input id="productTotalPrice" type="number" step="0.01" class="form-control" placeholder="00.00" @bind="product.TotalPrice">
+    </span>
   </div>
-  <div class="col-auto col-sm-2 col-md-1">
-    <input type="number" class="form-control" placeholder="Total Price" @bind="product.TotalPrice" />
+  <div class="col-md-2">
+    <label for="productItemCount" class="form-label">Item count</label>
+    <input id="productItemCount" type="number" class="form-control" placeholder="1" min="1" @bind="product.ItemCount" disabled="@(!product.IsUsingUnit)">
   </div>
-  <div class="col-auto col-sm-2 col-md-1">
-    <select class="form-control" @bind="product.SplitScheme">
-      <option value="0">By Unit Amount</option>
-      <option value="1">By Item Count</option>
-      <option value="2">By Proportion</option>
+  <div class="col-md-auto">
+    <label for="productSplitScheme" class="form-label">Split scheme</label>
+    <select class="form-select" id="productSplitScheme" @bind="product.SplitScheme">
+      @foreach (var splitScheme in Product.SplitSchemeMap)
+      {
+        <option value="@splitScheme.Key">@splitScheme.Value</option>
+      }
     </select>
   </div>
-  <div class="col-auto col-sm-2 col-md-1">
+  <div class="col-md-3">
     <button type="submit" class="btn btn-primary">Add</button>
   </div>
 </form>
@@ -211,18 +184,6 @@
 
 @code {
   private Product product = new Product();
-  @* private string productName = string.Empty;
-  private string productUnitName = "item";
-  private decimal productQuantity = 1;
-  private decimal productPricePerUnit = 1;
-  private decimal productTotalPrice = 1;
-  private int productSplitSchemeId = 0;
-  private Dictionary<int, SplitScheme> splitSchemes = new Dictionary<int, SplitScheme>
-  {
-    { 0, SplitScheme.ByUnitAmount },
-    { 1, SplitScheme.ByItemCount },
-    { 2, SplitScheme.ByProportion }
-  }; *@
   private List<Product> products = new List<Product>();
   private void AddProduct()
   {
