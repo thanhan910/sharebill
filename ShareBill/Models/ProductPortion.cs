@@ -9,9 +9,9 @@ namespace ShareBill.Models
             get {
                 return Product.SplitScheme switch
                 {
-                    SplitScheme.ByUnitAmount => Product.PricePerUnit * PortionValue,
-                    SplitScheme.ByItemCount => Product.TotalPrice / Product.ItemCount * PortionValue,
-                    SplitScheme.ByProportion => Product.TotalPrice * PortionValue,
+                    0 => Product.PricePerUnit * PortionValue,
+                    1 => Product.TotalPrice / Product.ItemCount * PortionValue,
+                    2 => Product.TotalPrice * PortionValue,
                     _ => 0,
                 };
             }

@@ -11,19 +11,12 @@ namespace ShareBill.Models
     {        
         public string Name { get; set; }
         // The amount bought quantified in the unit of UnitName
-        public decimal Quantity { get; set; } = 1;
         public string UnitName { get; set; } = "item";
-        public decimal PricePerUnit {
-            get {
-                return TotalPrice / Quantity;
-            }
-            set {
-                TotalPrice = value * Quantity;
-            }
-        }
+        public decimal Quantity { get; set; } = 1;
+        public decimal PricePerUnit { get; set; } = 1;
         public decimal TotalPrice {
             get {
-                return PricePerUnit * Quantity;
+                return Quantity * PricePerUnit;
             }
             set {
                 Quantity = value / PricePerUnit;
@@ -31,7 +24,7 @@ namespace ShareBill.Models
         }
         // Count of individual units. Differs from Quantity. E.g. 3 apples for 2 kg, 3 is ItemCount, 2 is Quantity, kg is UnitName
         public int ItemCount { get; set; } = 1;
-        public SplitScheme SplitScheme { get; set; } = SplitScheme.ByUnitAmount;
+        public int SplitScheme { get; set; } = 0;
 
         // public Product(string name, decimal quantity, string unitName, decimal pricePerUnit, int itemCount = 1)
         // {
