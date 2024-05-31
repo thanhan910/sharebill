@@ -13,70 +13,71 @@
 <h3>Participants List</h3>
 
 <table class="table">
-    <thead>
-        <tr>
-            <th>Name</th>
-            <th>Payer</th>
-            <th>Owner</th>
-            <th></th>
-        </tr>
-    </thead>
-    <tbody>
-        @foreach (var participant in participants)
-        {
-            <tr>
-                <td>@participant.Name</td>
-                <td>@(participant.IsPayer ? "Yes" : "")</td>
-                <td>@(participant.IsOwner ? "Yes" : "")</td>
-                <td><button class="btn btn-danger" @onclick="() => participants.Remove(participant)">Delete</button></td>
-            </tr>
-        }
-    </tbody>
+  <thead>
+    <tr>
+      <th>Name</th>
+      <th>Payer</th>
+      <th>Owner</th>
+      <th></th>
+    </tr>
+  </thead>
+  <tbody>
+    @foreach (var participant in participants)
+    {
+      <tr>
+        <td>@participant.Name</td>
+        <td>@(participant.IsPayer ? "Yes" : "")</td>
+        <td>@(participant.IsOwner ? "Yes" : "")</td>
+        <td><button class="btn btn-danger" @onclick="() => participants.Remove(participant)">Delete</button></td>
+      </tr>
+    }
+  </tbody>
 </table>
 
 <h3>Add Participants</h3>
 
 <form @onsubmit="AddParticipant" class="row">
-    <div class="col-sm-12 col-md-4">
-        <input type="text" class="form-control" placeholder="Name" @bind="participantName" />
+  <div class="col-sm-12 col-md-4">
+    <input type="text" class="form-control" placeholder="Name" @bind="participantName" />
+  </div>
+  <div class="col-auto col-sm-2 col-md-1">
+    <div class="form-check">
+      <input type="checkbox" class="form-check-input" id="isPayer" @bind="participantIsPayer" />
+      <label class="form-check-label" for="isPayer">Payer</label>
     </div>
-    <div class="col-auto col-sm-2 col-md-1">
-        <div class="form-check">
-            <input type="checkbox" class="form-check-input" id="isPayer" @bind="participantIsPayer" />
-            <label class="form-check-label" for="isPayer">Payer</label>
-        </div>
+  </div>
+  <div class="col-auto col-sm-2 col-md-1">
+    <div class="form-check">
+      <input type="checkbox" class="form-check-input" id="isOwner" @bind="participantIsOwner" />
+      <label class="form-check-label" for="isOwner">Owner</label>
     </div>
-    <div class="col-auto col-sm-2 col-md-1">
-        <div class="form-check">
-            <input type="checkbox" class="form-check-input" id="isOwner" @bind="participantIsOwner" />
-            <label class="form-check-label" for="isOwner">Owner</label>
-        </div>
-    </div>
-    <div class="col-auto col-sm-2 col-md-1">
-        <button type="submit" class="btn btn-primary">Add</button>
-    </div>
+  </div>
+  <div class="col-auto col-sm-2 col-md-1">
+    <button type="submit" class="btn btn-primary">Add</button>
+  </div>
 </form>
 
 
 @code {
-    private string participantName = string.Empty;
-    private bool participantIsPayer = true;
-    private bool participantIsOwner = true;
-    private List<Person> participants = new List<Person>();
-    private void AddParticipant()
+  private string participantName = string.Empty;
+  private bool participantIsPayer = true;
+  private bool participantIsOwner = true;
+  private List<Person> participants = new List<Person>();
+  private void AddParticipant()
+  {
+    if (string.IsNullOrWhiteSpace(participantName))
     {
-        if (string.IsNullOrWhiteSpace(participantName)) {
-            @* participantName = DateTime.Now.ToString("yyyyMMddHHmmssfff"); *@
-            participantName = "New participant";
-        }
-        participants.Add(new Person
-        {
-            Name = participantName,
-            IsPayer = participantIsPayer,
-            IsOwner = participantIsOwner
-        });
-        participantName = string.Empty;
-        participantIsPayer = true;
-        participantIsOwner = true;
+      @* participantName = DateTime.Now.ToString("yyyyMMddHHmmssfff"); *@
+      participantName = "New participant";
     }
+    participants.Add(new Person
+      {
+        Name = participantName,
+        IsPayer = participantIsPayer,
+        IsOwner = participantIsOwner
+      });
+    participantName = string.Empty;
+    participantIsPayer = true;
+    participantIsOwner = true;
+  }
 }
