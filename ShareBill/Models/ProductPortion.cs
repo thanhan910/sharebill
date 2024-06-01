@@ -3,7 +3,7 @@ namespace ShareBill.Models
     public class ProductPortion
     {
         public required Product Product;
-        public Person? Owner;
+        public string OwnerId { get; set; } = string.Empty;
         public decimal PortionValue { get; set; } = 1;
         public decimal Price {
             get {
