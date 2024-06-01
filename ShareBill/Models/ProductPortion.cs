@@ -4,6 +4,7 @@ namespace ShareBill.Models
     {
         public required string ProductId;
         public string OwnerId { get; set; } = string.Empty;
+        public string PreviousOwnerId { get; set; } = "0";
         public decimal PortionValue { get; set; } = 1;
         // public decimal Price {
         //     get {

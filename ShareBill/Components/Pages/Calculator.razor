@@ -121,7 +121,6 @@
     <tr>
       <th>Name</th>
       <th>Unit Price</th>
-      <th>Unit</th>
       <th>Amount bought</th>
       <th>Item count</th>
       <th>Total Price</th>
@@ -136,8 +135,15 @@
       <tr>
         <td>@product.Value.Name</td>
         <td>$@product.Value.PricePerUnit.ToString("0.00")</td>
-        <td>@product.Value.UnitName</td>
-        <td>@product.Value.Quantity</td>
+        <td>@(product.Value.Quantity)
+          @if (product.Value.IsUsingUnit)
+          {
+            @($" {product.Value.UnitName}(s)")
+          }
+          @* else {
+            @(product.Value.Quantity != 1 ? " items" : " item")
+          } *@
+        </td>
         <td>@product.Value.ItemCount</td>
         <td>$@product.Value.TotalPrice.ToString("0.00")</td>
         <td>@(participantsMap[product.Value.PayerId].Name)</td>
@@ -304,7 +310,6 @@
     <tr>
       <th>Name</th>
       <th>Unit Price</th>
-      <th>Unit</th>
       <th>Amount bought</th>
       <th>Item count</th>
       <th>Total Price</th>
@@ -317,6 +322,7 @@
       else
       {
         <th>Claim</th>
+        <th>Owner</th>
       }
       <th>Same as payer</th>
     </tr>
@@ -327,15 +333,22 @@
       <tr>
         <td>@productsMap[productPortion.ProductId].Name</td>
         <td>$@productsMap[productPortion.ProductId].PricePerUnit.ToString("0.00")</td>
-        <td>@productsMap[productPortion.ProductId].UnitName</td>
-        <td>@productsMap[productPortion.ProductId].Quantity</td>
+        <td>@(productsMap[productPortion.ProductId].Quantity)
+          @if (productsMap[productPortion.ProductId].IsUsingUnit)
+          {
+            @($" {productsMap[productPortion.ProductId].UnitName}(s)")
+          }
+          else {
+            @(productsMap[productPortion.ProductId].Quantity != 1 ? " items" : " item")
+          }
+        </td>
         <td>@productsMap[productPortion.ProductId].ItemCount</td>
         <td>$@productsMap[productPortion.ProductId].TotalPrice.ToString("0.00")</td>
         <td>@(participantsMap[productsMap[productPortion.ProductId].PayerId].Name)</td>
         <td>@(Product.SplitSchemeMap[productsMap[productPortion.ProductId].SplitScheme])</td>
-        <td>
         @if (ownerViewerId == "1")
         {
+        <td>
           <select class="form-select" @bind="productPortion.OwnerId">
             @foreach (var participant in participantsMap)
             {
@@ -344,12 +357,25 @@
               }
             }
           </select>
+        </td>
         }
         else
         {
-          <input type="checkbox" class="form-check-input" @onchange="(e) => AssignOwner(productPortion, ownerViewerId, (bool?)e.Value)" />
-        }
+        <td>
+          <input type="checkbox" class="form-check-input" @onchange="(e) => AssignOwner(productPortion, ownerViewerId, (bool?)e.Value)" checked="@(productPortion.OwnerId == ownerViewerId)"
+           />
         </td>
+        <td>
+          <select class="form-select" @bind="productPortion.OwnerId">
+            @foreach (var participant in participantsMap)
+            {
+              if (participant.Value.IsOwner) {
+                <option value="@participant.Key">@participant.Value.Name</option>
+              }
+            }
+          </select>
+        </td>
+        }
         <td>
           @(productsMap[productPortion.ProductId].PayerId == productPortion.OwnerId ? "Yes" : "")
         </td>
@@ -363,10 +389,11 @@
   {
     if (assign == true)
     {
+      productPortion.PreviousOwnerId = productPortion.OwnerId;
       productPortion.OwnerId = ownerId;
     }
     else {
-      productPortion.OwnerId = "0";
+      productPortion.OwnerId = productPortion.PreviousOwnerId;
     }
   }
 }
@@ -377,8 +404,8 @@
 <table class="table">
   <thead>
     <tr>
-      <th>Owner</th>
-      <th>Payer</th>
+      <th>From</th>
+      <th>To</th>
       <th>Amount</th>
     </tr>
   </thead>
