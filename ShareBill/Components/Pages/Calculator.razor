@@ -10,7 +10,7 @@
 <Clock />
 
 
-<h3>Participants List</h3>
+<h3>Participants List (Count: @(participantsMap.Count - 1))</h3>
 
 <table class="table">
   <thead>
@@ -73,7 +73,7 @@
 
   public Calculator()
   {
-    participantsMap = new Dictionary<string, Person> { { personId, new Person { Name = "[No payer]", IsPayer = true, IsOwner = true } } };
+    participantsMap = new Dictionary<string, Person> { { personId, new Person { Name = "[No one]", IsPayer = true, IsOwner = true } } };
   }
   private void AddParticipant()
   {
@@ -114,7 +114,7 @@
 <br />
 
 
-<h3>Products List</h3>
+<h3>Products List (Count: @(productsMap.Count), Total: $@(productsMap.Values.Sum(p => p.TotalPrice).ToString("0.00")))</h3>
 
 <table class="table">
   <thead>
@@ -276,6 +276,29 @@
 
 <h3>Assign owners</h3>
 
+<div class="row">
+  <div class="col-auto">
+    <div class="input-group">
+      <label for="ownerViewerId" class="input-group-text form-label col-form-label">View as:</label>
+      <select class="form-select" @bind="ownerViewerId">
+        <option value="1">[Admin view]</option>
+        @foreach (var participant in participantsMap)
+        {
+          if (participant.Value.IsOwner)
+          {
+            <option value="@participant.Key">@participant.Value.Name</option>
+          }
+        }
+      </select>
+    </div>
+  </div>
+</div>
+
+
+@code {
+  private string ownerViewerId = "1";
+}
+
 <table class="table">
   <thead>
     <tr>
@@ -287,7 +310,14 @@
       <th>Total Price</th>
       <th>Paid by</th>
       <th>Split Scheme</th>
-      <th>Owners</th>
+      @if (ownerViewerId == "1")
+      {
+        <th>Owner</th>
+      }
+      else
+      {
+        <th>Claim</th>
+      }
       <th>Same as payer</th>
     </tr>
   </thead>
@@ -304,6 +334,8 @@
         <td>@(participantsMap[productsMap[productPortion.ProductId].PayerId].Name)</td>
         <td>@(Product.SplitSchemeMap[productsMap[productPortion.ProductId].SplitScheme])</td>
         <td>
+        @if (ownerViewerId == "1")
+        {
           <select class="form-select" @bind="productPortion.OwnerId">
             @foreach (var participant in participantsMap)
             {
@@ -312,6 +344,11 @@
               }
             }
           </select>
+        }
+        else
+        {
+          <input type="checkbox" class="form-check-input" @onchange="(e) => AssignOwner(productPortion, ownerViewerId, (bool?)e.Value)" />
+        }
         </td>
         <td>
           @(productsMap[productPortion.ProductId].PayerId == productPortion.OwnerId ? "Yes" : "")
@@ -320,6 +357,19 @@
     }
   </tbody>
 </table>
+
+@code {
+  private void AssignOwner(ProductPortion productPortion, string ownerId, bool? assign)
+  {
+    if (assign == true)
+    {
+      productPortion.OwnerId = ownerId;
+    }
+    else {
+      productPortion.OwnerId = "0";
+    }
+  }
+}
 
 
 <h3>Payment plan</h3>
