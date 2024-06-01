@@ -216,7 +216,10 @@
     <select class="form-select" id="productPayer" @bind="personId">
       @foreach (var participant in participantsMap)
       {
-        <option value="@participant.Key">@participant.Value.Name</option>
+        if (participant.Value.IsPayer)
+        {
+          <option value="@participant.Key">@participant.Value.Name</option>
+        }
       }
     </select>
   </div>
@@ -254,13 +257,7 @@
   private void DeleteProduct(KeyValuePair<string, Product> product)
   {
     List<ProductPortion> productPortionIdsToRemove = new List<ProductPortion>();
-    @* foreach (var productPortion in productPortions)
-    {
-      if (productPortion.ProductId == product.Key)
-      {
-        productPortionIdsToRemove.Add(productPortion.Id);
-      }
-    } *@
+
     foreach (var productPortion in productPortions)
     {
       if (productPortion.ProductId == product.Key)
@@ -310,7 +307,9 @@
           <select class="form-select" @bind="productPortion.OwnerId">
             @foreach (var participant in participantsMap)
             {
-              <option value="@participant.Key">@participant.Value.Name</option>
+              if (participant.Value.IsOwner) {
+                <option value="@participant.Key">@participant.Value.Name</option>
+              }
             }
           </select>
         </td>
@@ -321,3 +320,56 @@
     }
   </tbody>
 </table>
+
+
+<h3>Payment plan</h3>
+
+<table class="table">
+  <thead>
+    <tr>
+      <th>Owner</th>
+      <th>Payer</th>
+      <th>Amount</th>
+    </tr>
+  </thead>
+  <tbody>
+    @foreach (var owner in PaymentPlan)
+    {
+      foreach (var payer in owner.Value)
+      {
+        <tr>
+          <td>@participantsMap[owner.Key].Name</td>
+          <td>@participantsMap[payer.Key].Name</td>
+          <td>$@payer.Value.ToString("0.00")</td>
+        </tr>
+      }
+    }
+  </tbody>
+</table>
+
+@code {
+  private Dictionary<string, Dictionary<string, decimal>> PaymentPlan {
+    get {
+      Dictionary<string, Dictionary<string, decimal>> plan = new Dictionary<string, Dictionary<string, decimal>>();
+      foreach (var productPortion in productPortions)
+      {
+        Product product = productsMap[productPortion.ProductId];
+        string payerId = product.PayerId;
+        string ownerId = productPortion.OwnerId;
+        if (payerId != ownerId)
+        {
+          if (!plan.ContainsKey(ownerId))
+          {
+            plan.Add(ownerId, new Dictionary<string, decimal>());
+          }
+          if (!plan[ownerId].ContainsKey(payerId))
+          {
+            plan[ownerId].Add(payerId, 0);
+          }
+          plan[ownerId][payerId] += product.TotalPrice;
+        }
+      }
+      return plan;
+    }
+  }
+}
