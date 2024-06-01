@@ -28,7 +28,7 @@
         <td>@participant.Value.Name</td>
         <td>@(participant.Value.IsPayer ? "Yes" : "")</td>
         <td>@(participant.Value.IsOwner ? "Yes" : "")</td>
-        <td><button class="btn btn-danger" @onclick="() => participantsMap.Remove(participant.Key)">Delete</button></td>
+        <td><button class="btn btn-danger" @onclick="() => DeleteParticipant(participant)">Delete</button></td>
       </tr>
     }
   </tbody>
@@ -83,6 +83,11 @@
         IsOwner = participantIsOwner
       });
     participantName = string.Empty;
+  }
+  private void DeleteParticipant(KeyValuePair<string, Person> participant)
+  {
+    participantsMap.Remove(participant.Key);
+    personId = participantsMap.First().Key;
   }
 }
 
