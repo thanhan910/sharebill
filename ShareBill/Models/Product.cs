@@ -65,5 +65,6 @@ namespace ShareBill.Models
             { 2, "By percentage" },
         };
         public int SplitScheme { get; set; } = 0;
+        public Person? PaidBy { get; set; }
     }
 } 

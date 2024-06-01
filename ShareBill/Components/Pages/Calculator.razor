@@ -22,13 +22,13 @@
     </tr>
   </thead>
   <tbody>
-    @foreach (var participant in participants)
+    @foreach (var participant in participantsMap)
     {
       <tr>
-        <td>@participant.Name</td>
-        <td>@(participant.IsPayer ? "Yes" : "")</td>
-        <td>@(participant.IsOwner ? "Yes" : "")</td>
-        <td><button class="btn btn-danger" @onclick="() => participants.Remove(participant)">Delete</button></td>
+        <td>@participant.Value.Name</td>
+        <td>@(participant.Value.IsPayer ? "Yes" : "")</td>
+        <td>@(participant.Value.IsOwner ? "Yes" : "")</td>
+        <td><button class="btn btn-danger" @onclick="() => participantsMap.Remove(participant.Key)">Delete</button></td>
       </tr>
     }
   </tbody>
@@ -59,17 +59,24 @@
 
 
 @code {
+  private string personId = DateTime.Now.ToString("yyyyMMddHHmmssfff");
   private string participantName = string.Empty;
   private bool participantIsPayer = true;
   private bool participantIsOwner = true;
-  private List<Person> participants = new List<Person>();
+  private Dictionary<string, Person> participantsMap;
+
+  public Calculator()
+  {
+    participantsMap = new Dictionary<string, Person> { { personId, new Person { Name = "You", IsPayer = true, IsOwner = true } } };
+  }
   private void AddParticipant()
   {
+    string participantId = DateTime.Now.ToString("yyyyMMddHHmmssfff");
     if (string.IsNullOrWhiteSpace(participantName))
     {
-      participantName = DateTime.Now.ToString("yyyyMMddHHmmssfff");
+      participantName = $"Participant {participantId}";
     }
-    participants.Add(new Person
+    participantsMap.Add(participantId, new Person
       {
         Name = participantName,
         IsPayer = participantIsPayer,
@@ -93,6 +100,7 @@
       <th>Amount bought</th>
       <th>Item count</th>
       <th>Total Price</th>
+      <th>Paid by</th>
       <th>Split Scheme</th>
       <th></th>
     </tr>
@@ -107,6 +115,7 @@
         <td>@product.Quantity</td>
         <td>@product.ItemCount</td>
         <td>$@product.TotalPrice.ToString("0.00")</td>
+        <td>@(product.PaidBy != null ? product.PaidBy.Name : "")</td>
         <td>@(Product.SplitSchemeMap[product.SplitScheme])</td>
         <td><button class="btn btn-danger" @onclick="() => products.Remove(product)">Delete</button></td>
       </tr>
@@ -177,6 +186,15 @@
       }
     </select>
   </div>
+  <div class="col-md-auto">
+    <label for="productPayer" class="form-label">Paid by:</label>
+    <select class="form-select" id="productPayer" @bind="personId">
+      @foreach (var participant in participantsMap)
+      {
+        <option value="@participant.Key">@participant.Value.Name</option>
+      }
+    </select>
+  </div>
   <div class="col-md-3">
     <button type="submit" class="btn btn-primary">Add</button>
   </div>
@@ -192,6 +210,7 @@
     {
       product.Name = "New product";
     }
+    product.PaidBy = participantsMap[personId];
     products.Add(product);
     product = new Product();
   }
