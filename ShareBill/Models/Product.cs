@@ -58,13 +58,13 @@ namespace ShareBill.Models
         }
         // Count of individual units. Differs from Quantity. E.g. 3 apples for 2 kg, 3 is ItemCount, 2 is Quantity, kg is UnitName
         public int ItemCount { get; set; } = 1;
-        public static Dictionary<int, string> SplitSchemeMap = new()
+        public static Dictionary<int, string> SplitSchemeMap { get; } = new()
         {
             { 0, "By unit amount" },
             { 1, "By item count" },
             { 2, "By percentage" },
         };
         public int SplitScheme { get; set; } = 0;
-        public Person? PaidBy { get; set; }
+        public string PayerId { get; set; } = "0";
     }
 } 

@@ -28,7 +28,13 @@
         <td>@participant.Value.Name</td>
         <td>@(participant.Value.IsPayer ? "Yes" : "")</td>
         <td>@(participant.Value.IsOwner ? "Yes" : "")</td>
-        <td><button class="btn btn-danger" @onclick="() => DeleteParticipant(participant)">Delete</button></td>
+        <td>
+          @if (participant.Key != "0")
+          {
+            @* <button class="btn btn-primary" @onclick="() => personId = participant.Key">Edit</button> *@
+            <button class="btn btn-danger" @onclick="() => DeleteParticipant(participant)">Delete</button>
+          }
+        </td>
       </tr>
     }
   </tbody>
@@ -59,7 +65,7 @@
 
 
 @code {
-  private string personId = DateTime.Now.ToString("yyyyMMddHHmmssfff");
+  private string personId = "0";
   private string participantName = string.Empty;
   private bool participantIsPayer = true;
   private bool participantIsOwner = true;
@@ -67,7 +73,7 @@
 
   public Calculator()
   {
-    participantsMap = new Dictionary<string, Person> { { personId, new Person { Name = "You", IsPayer = true, IsOwner = true } } };
+    participantsMap = new Dictionary<string, Person> { { personId, new Person { Name = "[No payer]", IsPayer = true, IsOwner = true } } };
   }
   private void AddParticipant()
   {
@@ -85,9 +91,23 @@
     participantName = string.Empty;
   }
   private void DeleteParticipant(KeyValuePair<string, Person> participant)
-  {
+  {    
+    foreach (var product in productsMap)
+    {
+      if (product.Value.PayerId == participant.Key)
+      {
+        product.Value.PayerId = "0";
+      }
+    }
+    foreach (var productPortion in productPortions)
+    {
+      if (productPortion.OwnerId == participant.Key)
+      {
+        productPortion.OwnerId = "0";
+      }
+    }
     participantsMap.Remove(participant.Key);
-    personId = participantsMap.First().Key;
+    personId = "0";
   }
 }
 
@@ -111,18 +131,18 @@
     </tr>
   </thead>
   <tbody>
-    @foreach (var product in products)
+    @foreach (var product in productsMap)
     {
       <tr>
-        <td>@product.Name</td>
-        <td>$@product.PricePerUnit.ToString("0.00")</td>
-        <td>@product.UnitName</td>
-        <td>@product.Quantity</td>
-        <td>@product.ItemCount</td>
-        <td>$@product.TotalPrice.ToString("0.00")</td>
-        <td>@(product.PaidBy != null ? product.PaidBy.Name : "")</td>
-        <td>@(Product.SplitSchemeMap[product.SplitScheme])</td>
-        <td><button class="btn btn-danger" @onclick="() => products.Remove(product)">Delete</button></td>
+        <td>@product.Value.Name</td>
+        <td>$@product.Value.PricePerUnit.ToString("0.00")</td>
+        <td>@product.Value.UnitName</td>
+        <td>@product.Value.Quantity</td>
+        <td>@product.Value.ItemCount</td>
+        <td>$@product.Value.TotalPrice.ToString("0.00")</td>
+        <td>@(participantsMap[product.Value.PayerId].Name)</td>
+        <td>@(Product.SplitSchemeMap[product.Value.SplitScheme])</td>
+        <td><button class="btn btn-danger" @onclick="() => DeleteProduct(product)">Delete</button></td>
       </tr>
     }
   </tbody>
@@ -208,16 +228,17 @@
 
 @code {
   private Product product = new Product();
-  private List<Product> products = new List<Product>();
+  private Dictionary<string, Product> productsMap = new Dictionary<string, Product>();
   private List<ProductPortion> productPortions = new List<ProductPortion>();
   private void AddProduct()
   {
+    string productId = DateTime.Now.ToString("yyyyMMddHHmmssfff");
     if (string.IsNullOrWhiteSpace(product.Name))
     {
-      product.Name = $"Product {DateTime.Now.ToString("yyyyMMddHHmmssfff")}";
+      product.Name = $"Product {productId}";
     }
-    product.PaidBy = participantsMap[personId];
-    products.Add(product);
+    product.PayerId = personId;
+    productsMap.Add(productId, product);
     string newOwnerId = "";
     if (participantsMap[personId].IsOwner)
     {
@@ -227,9 +248,31 @@
     {
       newOwnerId = participantsMap.First(p => p.Value.IsOwner).Key;
     }
-    productPortions.Add(new ProductPortion { Product = product, OwnerId = personId });
-    Console.WriteLine(productPortions.Count);
+    productPortions.Add(new ProductPortion { ProductId = productId, OwnerId = personId });
     product = new Product();
+  }
+  private void DeleteProduct(KeyValuePair<string, Product> product)
+  {
+    List<ProductPortion> productPortionIdsToRemove = new List<ProductPortion>();
+    @* foreach (var productPortion in productPortions)
+    {
+      if (productPortion.ProductId == product.Key)
+      {
+        productPortionIdsToRemove.Add(productPortion.Id);
+      }
+    } *@
+    foreach (var productPortion in productPortions)
+    {
+      if (productPortion.ProductId == product.Key)
+      {
+        productPortionIdsToRemove.Add(productPortion);
+      }
+    }
+    foreach (var productPortion in productPortionIdsToRemove)
+    {
+      productPortions.Remove(productPortion);
+    }
+    productsMap.Remove(product.Key);
   }
 }
 
@@ -255,14 +298,14 @@
     @foreach (var productPortion in productPortions)
     {
       <tr>
-        <td>@productPortion.Product.Name</td>
-        <td>$@productPortion.Product.PricePerUnit.ToString("0.00")</td>
-        <td>@productPortion.Product.UnitName</td>
-        <td>@productPortion.Product.Quantity</td>
-        <td>@productPortion.Product.ItemCount</td>
-        <td>$@productPortion.Product.TotalPrice.ToString("0.00")</td>
-        <td>@(productPortion.Product.PaidBy != null ? productPortion.Product.PaidBy.Name : "")</td>
-        <td>@(Product.SplitSchemeMap[productPortion.Product.SplitScheme])</td>
+        <td>@productsMap[productPortion.ProductId].Name</td>
+        <td>$@productsMap[productPortion.ProductId].PricePerUnit.ToString("0.00")</td>
+        <td>@productsMap[productPortion.ProductId].UnitName</td>
+        <td>@productsMap[productPortion.ProductId].Quantity</td>
+        <td>@productsMap[productPortion.ProductId].ItemCount</td>
+        <td>$@productsMap[productPortion.ProductId].TotalPrice.ToString("0.00")</td>
+        <td>@(participantsMap[productsMap[productPortion.ProductId].PayerId].Name)</td>
+        <td>@(Product.SplitSchemeMap[productsMap[productPortion.ProductId].SplitScheme])</td>
         <td>
           <select class="form-select" @bind="productPortion.OwnerId">
             @foreach (var participant in participantsMap)
@@ -272,7 +315,7 @@
           </select>
         </td>
         <td>
-          @(productPortion.Product.PaidBy == participantsMap[productPortion.OwnerId] ? "Yes" : "")
+          @(productsMap[productPortion.ProductId].PayerId == productPortion.OwnerId ? "Yes" : "")
         </td>
       </tr>
     }
